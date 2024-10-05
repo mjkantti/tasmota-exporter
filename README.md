@@ -1,6 +1,6 @@
 # tasmota-exporter
 
-Prometheus Exporter for Tasmotaa power meters.
+Prometheus Exporter for Tasmotaa power meters. (I'm using Sonoff S31 plugs with Tasmota software)
 
 Polls all the tasmota devices listed in config.py on Prometheus scrape.
 
