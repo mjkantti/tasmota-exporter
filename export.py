@@ -11,7 +11,7 @@ from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGISTRY
 from time import time, sleep
 
-from config import export_port, export_address, tasmota_addresses
+from config import export_port, export_address, tasmota_addresses, request_timeout
 
 class TasmotaCollector(object):
     def __init__(self):
@@ -65,7 +65,7 @@ class TasmotaCollector(object):
         for addr in tasmota_addresses:
             try:
                 cmd_url = f'http://{addr}/cm'
-                x = requests.get(url = cmd_url, headers = self.headers, params = {'cmnd': 'status0'}, timeout=1)
+                x = requests.get(url = cmd_url, headers = self.headers, params = {'cmnd': 'status0'}, timeout=request_timeout)
     
                 if not x.ok:
                     logging.warning(f'Could not get device Information: {x.reason}')
