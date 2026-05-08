@@ -6,12 +6,19 @@ import requests
 import sys
 import logging
 
-from signal import signal, SIGTERM, SIGINT
 from prometheus_client import start_http_server
 from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGISTRY
+from signal import signal, SIGTERM, SIGINT
 from time import time, sleep
+from requests.adapters import HTTPAdapter, Retry
 
 from config import export_port, export_address, tasmota_addresses, request_timeout
+
+retries = Retry(
+    total = 5,
+    backoff_factor=0,
+    status_forcelist = [500, 502, 503, 504 ]
+    )
 
 class TasmotaCollector(object):
     def __init__(self):
@@ -64,8 +71,10 @@ class TasmotaCollector(object):
         self.metrics = {}
         for addr in tasmota_addresses:
             try:
+                s = requests.Session()
+                s.mount('http://', HTTPAdapter(max_retries=retries))
                 cmd_url = f'http://{addr}/cm'
-                x = requests.get(url = cmd_url, headers = self.headers, params = {'cmnd': 'status0'}, timeout=request_timeout)
+                x = s.get(url = cmd_url, headers = self.headers, params = {'cmnd': 'status0'}, timeout=request_timeout)
     
                 if not x.ok:
                     logging.warning(f'Could not get device Information: {x.reason}')
